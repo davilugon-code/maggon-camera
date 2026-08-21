@@ -75,19 +75,90 @@ export default function EventAdminDetail({ params }: { params: { eventId: string
 
   const downloadPreconfiguredBat = () => {
     if (!event) return;
+    
+    // Self-contained standalone batch file that extracts python watcher to %TEMP% and opens folder picker
     const batContent = `@echo off
 title Maggon Camera Ingestor
+color 0A
 echo =====================================================
 echo    Maggon Camera Ingestor -- Conectando a Camera
 echo =====================================================
 echo.
-echo Verificando dependencias...
-python -c "import watchdog, requests, PIL" 2>nul || pip install watchdog requests pillow
+echo Verificando dependencias Python...
+python -c "import watchdog, requests, PIL" 2>nul
+if %ERRORLEVEL% NEQ 0 (
+    echo Instalando bibliotecas necessarias (Watchdog, Requests, Pillow)...
+    pip install watchdog requests pillow
+)
+
 echo.
-echo Iniciando transmissao ao vivo da camera Canon...
-python tethering-client\\watcher.py --folder "%USERPROFILE%\\Pictures" --api-url "${appBaseUrl}" --event-id "${event.id}" --api-key "${event.apiKey}"
+echo Criando script de transmissao ao vivo...
+set WATCHER_SCRIPT=%TEMP%\\maggon_standalone_watcher.py
+
+(
+echo import os, sys, time, requests
+echo from PIL import Image
+echo from watchdog.observers import Observer
+echo from watchdog.events import FileSystemEventHandler
+echo.
+echo API_URL = "${appBaseUrl}"
+echo EVENT_ID = "${event.id}"
+echo API_KEY = "${event.apiKey}"
+echo.
+echo def upload_photo(file_path^):
+echo     filename = os.path.basename(file_path^)
+echo     ext = os.path.splitext(filename^)[1].lower(^)
+echo     if ext not in [".jpg", ".jpeg", ".cr2", ".cr3", ".arw", ".nef", ".png"] or filename.endswith("_tmp.jpg"^): return
+echo     print(f"\\n[+] Nova foto detectada: {filename}"^)
+echo     time.sleep(1.0^)
+echo     url = f"{API_URL.rstrip('/')}/api/events/{EVENT_ID}/upload"
+echo     headers = {"x-api-key": API_KEY}
+echo     try:
+echo         print(f"[>] Transmitindo foto para os convidados ao vivo..."^)
+echo         with open(file_path, "rb"^) as f:
+echo             files = {"file": (filename, f, "image/jpeg"^)}
+echo             res = requests.post(url, headers=headers, files=files, timeout=30^)
+echo         if res.status_code == 200 and res.json(^).get("success"^):
+echo             print(f"[OK] FOTO TRANSMITIDA COM SUCESSO!"^)
+echo         else:
+echo             print(f"[X] Falha no envio: {res.text}"^)
+echo     except Exception as e:
+echo         print(f"[X] Erro de conexao: {e}"^)
+echo.
+echo class Handler(FileSystemEventHandler^):
+echo     def on_created(self, event^):
+echo         if not event.is_directory: upload_photo(event.src_path^)
+echo     def on_modified(self, event^):
+echo         if not event.is_directory: upload_photo(event.src_path^)
+echo.
+echo if __name__ == "__main__":
+echo     import tkinter as tk
+echo     from tkinter import filedialog
+echo     root = tk.Tk(^)
+echo     root.withdraw(^)
+echo     print("Selecione a pasta onde a camera Canon salva as fotos..."^)
+echo     folder = filedialog.askdirectory(title="Selecione a pasta das fotos da Canon"^)
+echo     if not folder:
+echo         folder = os.path.expanduser("~/Pictures"^)
+echo     print(f"Pasta selecionada: {folder}"^)
+echo     print("TRANSMISSAO ATIVA! Tire fotos com a camera Canon..."^)
+echo     event_handler = Handler(^)
+echo     observer = Observer(^)
+echo     observer.schedule(event_handler, path=folder, recursive=False^)
+echo     observer.start(^)
+echo     try:
+echo         while True: time.sleep(1^)
+echo     except KeyboardInterrupt:
+echo         observer.stop(^)
+echo     observer.join(^)
+) > "%WATCHER_SCRIPT%"
+
+echo.
+echo Executando Transmissao Ao Vivo Maggon...
+python "%WATCHER_SCRIPT%"
 pause
 `;
+
     const blob = new Blob([batContent], { type: 'application/x-bat' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -356,18 +427,18 @@ pause
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white">Integração com a Câmera Canon</h3>
-                  <p className="text-xs text-gray-400">Para seu cliente usar sem digitar nenhum comando no terminal.</p>
+                  <p className="text-xs text-gray-400">Arquivo autônomo de 1-clique para o seu cliente.</p>
                 </div>
               </div>
 
-              {/* 1-Click BAT Downloader Button */}
+              {/* 1-Click Self-Contained BAT Downloader Button */}
               <div className="bg-gradient-to-r from-brand-900/60 to-accent-violet/30 border border-brand-500/40 rounded-2xl p-5 mb-5 text-left">
                 <div className="flex items-center space-x-2 text-brand-300 font-bold text-sm mb-1">
                   <PlaySquare className="w-5 h-5 text-accent-cyan" />
-                  <span>Opção 1: Arquivo de 2-Cliques para o Cliente (.BAT)</span>
+                  <span>Baixar Lançador Autônomo para o Cliente (.BAT)</span>
                 </div>
                 <p className="text-xs text-gray-300 mb-4 leading-relaxed">
-                  Clique no botão abaixo para baixar um executável `.bat` já configurado com a chave deste evento. Seu cliente apenas dá **2 cliques** no arquivo no computador e a transmissão começa!
+                  Baixe este arquivo `.bat` autônomo e envie para o seu cliente. Quando ele clicar no arquivo em qualquer pasta, o script abre uma janela para ele escolher a pasta das fotos e inicia a transmissão ao vivo automaticamente!
                 </p>
 
                 <button
@@ -375,7 +446,7 @@ pause
                   className="w-full py-3 px-4 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-accent-emerald to-brand-600 hover:opacity-95 transition-all shadow-lg shadow-accent-emerald/20 flex items-center justify-center space-x-2"
                 >
                   <Download className="w-4 h-4" />
-                  <span>Baixar Lançador Pré-Configurado (.BAT)</span>
+                  <span>Baixar Lançador Autônomo (.BAT)</span>
                 </button>
               </div>
 
