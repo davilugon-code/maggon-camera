@@ -145,44 +145,54 @@ if __name__ == "__main__":
     // Base64 encode the Python script so it never triggers Windows Batch syntax parsing errors
     const b64Code = btoa(unescape(encodeURIComponent(rawPythonScript)));
 
+    // Flat batch file without parenthesized block syntax hazards
     const batContent = `@echo off
+setlocal
 title Maggon Camera Ingestor
 color 0A
+
 echo =====================================================
 echo    Maggon Camera Ingestor -- Conectando a Camera
 echo =====================================================
 echo.
 
-set PYTHON_CMD=python
 where python >nul 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    where py >nul 2>nul
-    if %ERRORLEVEL% EQ 0 (
-        set PYTHON_CMD=py
-    ) else (
-        echo [ERRO] Python nao foi encontrado no seu Windows!
-        echo Por favor, instale o Python em https://www.python.org/downloads
-        echo IMPORTANTE: Marque a opcao "Add Python to PATH" durante a instalacao.
-        echo.
-        pause
-        exit /b 1
-    )
+if %ERRORLEVEL% EQU 0 (
+    set "PYTHON_CMD=python"
+    goto :PYTHON_FOUND
 )
 
-echo Verificando dependencias Python...
+where py >nul 2>nul
+if %ERRORLEVEL% EQU 0 (
+    set "PYTHON_CMD=py"
+    goto :PYTHON_FOUND
+)
+
+echo [ERRO] Python nao foi encontrado no seu Windows!
+echo.
+echo Para usar o Maggon Camera, por favor instale o Python:
+echo 1. Baixe o Python em: https://www.python.org/downloads
+echo 2. Na instalacao, MARQUE a caixa "Add Python to PATH"
+echo.
+pause
+exit /b 1
+
+:PYTHON_FOUND
+echo Python encontrado! Verificando dependencias...
 %PYTHON_CMD% -c "import watchdog, requests, PIL" 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    echo Instalando bibliotecas necessarias (Watchdog, Requests, Pillow)...
-    %PYTHON_CMD% -m pip install watchdog requests pillow
-)
+if %ERRORLEVEL% EQU 0 goto :RUN_WATCHER
 
+echo Instalando bibliotecas necessarias (Watchdog, Requests, Pillow)...
+%PYTHON_CMD% -m pip install watchdog requests pillow
+
+:RUN_WATCHER
 echo.
 echo Iniciando Transmissao Ao Vivo...
 %PYTHON_CMD% -c "import base64; exec(base64.b64decode('${b64Code}'))"
 
 echo.
 if %ERRORLEVEL% NEQ 0 (
-    echo Ocorreu um erro durante a execução da transmissão.
+    echo Ocorreu um encerramento na transmissao.
 )
 pause
 `;
