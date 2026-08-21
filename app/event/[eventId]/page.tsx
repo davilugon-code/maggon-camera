@@ -216,11 +216,11 @@ export default function GuestGalleryPage({ params }: { params: { eventId: string
   }
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-gray-100 pb-32 select-none">
-      {/* Real-time Toast Banner Alert */}
+    <div className="min-h-screen bg-[#090d16] text-gray-100 pb-36 select-none">
+      {/* Real-time Toast Banner Alert - Centered Parent Container */}
       {newPhotoAlert && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-slide-up w-[90%] max-w-sm">
-          <div className="bg-gradient-to-r from-brand-600 via-accent-violet to-accent-cyan text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center justify-center space-x-2 text-xs font-semibold">
+        <div className="fixed top-4 inset-x-0 z-50 flex justify-center px-4 pointer-events-none">
+          <div className="pointer-events-auto w-full max-w-sm bg-gradient-to-r from-brand-600 via-accent-violet to-accent-cyan text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center justify-center space-x-2 text-xs font-semibold animate-slide-up">
             <Sparkles className="w-4 h-4 animate-spin text-amber-300 flex-shrink-0" />
             <span>Nova foto tirada pelo fotógrafo agora!</span>
           </div>
@@ -379,36 +379,38 @@ export default function GuestGalleryPage({ params }: { params: { eventId: string
         )}
       </main>
 
-      {/* Floating Action Bar during Multi-Selection Mode - Mobile First Centered */}
+      {/* Floating Action Bar during Multi-Selection Mode - 100% Centered Parent Flex */}
       {selectionMode && (
-        <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md glass-panel bg-gray-950/95 backdrop-blur-xl rounded-2xl p-3 shadow-2xl border border-brand-500/50 flex flex-col sm:flex-row items-center justify-between gap-2.5 animate-slide-up">
-          {/* Top/Left Row: Selection Counter & Marcar/Desmarcar Toggle */}
-          <div className="flex items-center justify-between w-full sm:w-auto px-1">
-            <span className="text-xs font-semibold text-gray-300">
-              <span className="text-brand-400 font-bold">{selectedPhotoIds.size}</span> foto{selectedPhotoIds.size !== 1 ? 's' : ''} selecionada{selectedPhotoIds.size !== 1 ? 's' : ''}
-            </span>
+        <div className="fixed bottom-4 sm:bottom-6 inset-x-0 z-50 flex justify-center px-4 pointer-events-none">
+          <div className="pointer-events-auto w-full max-w-md glass-panel bg-gray-950/95 backdrop-blur-xl rounded-2xl p-3.5 shadow-2xl border border-brand-500/50 flex flex-col sm:flex-row items-center justify-between gap-3 animate-slide-up">
+            {/* Top/Left Row: Selection Counter & Marcar/Desmarcar Toggle */}
+            <div className="flex items-center justify-between w-full sm:w-auto px-1">
+              <span className="text-xs font-semibold text-gray-300">
+                <span className="text-brand-400 font-bold">{selectedPhotoIds.size}</span> foto{selectedPhotoIds.size !== 1 ? 's' : ''} selecionada{selectedPhotoIds.size !== 1 ? 's' : ''}
+              </span>
 
+              <button
+                onClick={selectAllPhotos}
+                className="text-xs text-brand-400 font-medium hover:underline ml-3"
+              >
+                {selectedPhotoIds.size === photos.length ? 'Desmarcar Todas' : 'Marcar Todas'}
+              </button>
+            </div>
+
+            {/* Centered Download ZIP Button */}
             <button
-              onClick={selectAllPhotos}
-              className="text-xs text-brand-400 font-medium hover:underline ml-3"
+              onClick={() => handleDownloadZip(true)}
+              disabled={selectedPhotoIds.size === 0 || downloadingZip}
+              className="w-full sm:w-auto py-2.5 px-5 text-xs font-bold rounded-xl text-white bg-gradient-to-r from-brand-600 via-brand-500 to-accent-violet hover:opacity-90 transition-all shadow-lg shadow-brand-600/40 flex items-center justify-center space-x-2 disabled:opacity-50 flex-shrink-0"
             >
-              {selectedPhotoIds.size === photos.length ? 'Desmarcar Todas' : 'Marcar Todas'}
+              {downloadingZip ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              <span>Baixar Selecionadas (.ZIP)</span>
             </button>
           </div>
-
-          {/* Centered Download ZIP Button */}
-          <button
-            onClick={() => handleDownloadZip(true)}
-            disabled={selectedPhotoIds.size === 0 || downloadingZip}
-            className="w-full sm:w-auto py-2.5 px-5 text-xs font-bold rounded-xl text-white bg-gradient-to-r from-brand-600 via-brand-500 to-accent-violet hover:opacity-90 transition-all shadow-lg shadow-brand-600/40 flex items-center justify-center space-x-2 disabled:opacity-50 flex-shrink-0"
-          >
-            {downloadingZip ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <Download className="w-4 h-4" />
-            )}
-            <span>Baixar Selecionadas (.ZIP)</span>
-          </button>
         </div>
       )}
 
