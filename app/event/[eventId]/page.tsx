@@ -216,12 +216,12 @@ export default function GuestGalleryPage({ params }: { params: { eventId: string
   }
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-gray-100 pb-28 select-none">
+    <div className="min-h-screen bg-[#090d16] text-gray-100 pb-32 select-none">
       {/* Real-time Toast Banner Alert */}
       {newPhotoAlert && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-slide-up">
-          <div className="bg-gradient-to-r from-brand-600 via-accent-violet to-accent-cyan text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center space-x-2 text-xs font-semibold">
-            <Sparkles className="w-4 h-4 animate-spin text-amber-300" />
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-slide-up w-[90%] max-w-sm">
+          <div className="bg-gradient-to-r from-brand-600 via-accent-violet to-accent-cyan text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center justify-center space-x-2 text-xs font-semibold">
+            <Sparkles className="w-4 h-4 animate-spin text-amber-300 flex-shrink-0" />
             <span>Nova foto tirada pelo fotógrafo agora!</span>
           </div>
         </div>
@@ -229,44 +229,44 @@ export default function GuestGalleryPage({ params }: { params: { eventId: string
 
       {/* Sticky Header Bar */}
       <header className="w-full border-b border-gray-800/80 glass-panel sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Logo & Live Status */}
-          <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-accent-cyan p-0.5 shadow-md shadow-brand-500/20">
+          <div className="flex items-center space-x-2.5 min-w-0 pr-2">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-accent-cyan p-0.5 shadow-md shadow-brand-500/20 flex-shrink-0">
               <div className="w-full h-full bg-[#090d16] rounded-[10px] flex items-center justify-center">
                 <Camera className="w-4 h-4 text-brand-400" />
               </div>
             </div>
 
-            <div>
-              <h1 className="text-sm sm:text-base font-bold text-white truncate max-w-[180px] sm:max-w-xs">
+            <div className="min-w-0">
+              <h1 className="text-xs sm:text-base font-bold text-white truncate max-w-[160px] sm:max-w-xs">
                 {event.title}
               </h1>
               <div className="flex items-center space-x-1.5 text-[10px] text-gray-400">
                 <span
-                  className={`w-2 h-2 rounded-full ${
+                  className={`w-2 h-2 rounded-full flex-shrink-0 ${
                     isConnectedLive ? 'bg-accent-emerald animate-pulse' : 'bg-gray-500'
                   }`}
                 />
-                <span>{isConnectedLive ? 'Ao Vivo (Transmitindo)' : 'Galeria Atualizada'}</span>
+                <span className="truncate">{isConnectedLive ? 'Ao Vivo' : 'Galeria Atualizada'}</span>
               </div>
             </div>
           </div>
 
           {/* Header Action: Baixar Todas */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             <button
               onClick={() => handleDownloadZip(false)}
               disabled={downloadingZip || photos.length === 0}
-              className="px-3 py-1.5 text-xs font-semibold rounded-xl text-white bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-500 hover:to-brand-600 transition-all shadow-md shadow-brand-600/30 flex items-center space-x-1.5"
+              className="px-3 py-2 text-xs font-semibold rounded-xl text-white bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-500 hover:to-brand-600 transition-all shadow-md shadow-brand-600/30 flex items-center space-x-1.5"
             >
               {downloadingZip ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <FolderArchive className="w-3.5 h-3.5" />
+                <FolderArchive className="w-3.5 h-3.5 text-accent-cyan" />
               )}
               <span className="hidden sm:inline">Baixar Todas (.ZIP)</span>
-              <span className="sm:hidden">Baixar Todas</span>
+              <span className="sm:hidden text-[11px]">Baixar Todas</span>
             </button>
           </div>
         </div>
@@ -275,40 +275,31 @@ export default function GuestGalleryPage({ params }: { params: { eventId: string
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-4">
         {/* Controls Bar: Sort & Selection Toggle */}
-        <div className="flex items-center justify-between mb-4 glass-card p-3 rounded-2xl">
-          {/* Photos Count & Selection Mode Toggle */}
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => {
-                setSelectionMode(!selectionMode);
-                if (selectionMode) setSelectedPhotoIds(new Set());
-              }}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center space-x-1.5 ${
-                selectionMode
-                  ? 'bg-brand-500/20 text-brand-300 border border-brand-500/40'
-                  : 'glass-button text-gray-300 hover:text-white'
-              }`}
-            >
-              {selectionMode ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
-              <span>{selectionMode ? 'Cancelar Seleção' : 'Selecionar Fotos'}</span>
-            </button>
-
-            <span className="text-xs text-gray-400 hidden sm:inline">
-              {photos.length} {photos.length === 1 ? 'foto' : 'fotos'}
-            </span>
-          </div>
+        <div className="flex items-center justify-between mb-4 glass-card p-2.5 sm:p-3 rounded-2xl gap-2">
+          {/* Selection Mode Toggle */}
+          <button
+            onClick={() => {
+              setSelectionMode(!selectionMode);
+              if (selectionMode) setSelectedPhotoIds(new Set());
+            }}
+            className={`px-3 py-2 text-xs font-semibold rounded-xl transition-all flex items-center space-x-1.5 ${
+              selectionMode
+                ? 'bg-brand-500/20 text-brand-300 border border-brand-500/40'
+                : 'glass-button text-gray-300 hover:text-white'
+            }`}
+          >
+            {selectionMode ? <CheckCircle2 className="w-4 h-4 text-brand-400" /> : <Circle className="w-4 h-4" />}
+            <span>{selectionMode ? 'Cancelar Seleção' : 'Selecionar Fotos'}</span>
+          </button>
 
           {/* Sort Order Toggle */}
-          <div className="flex items-center space-x-2">
-            <span className="text-xs text-gray-400 hidden sm:inline">Ordenar:</span>
-            <button
-              onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')}
-              className="px-3 py-1.5 text-xs font-semibold rounded-xl glass-button text-gray-300 hover:text-white flex items-center space-x-1.5"
-            >
-              <ArrowUpDown className="w-3.5 h-3.5 text-accent-cyan" />
-              <span>{sortOrder === 'newest' ? 'Mais recentes' : 'Mais antigas'}</span>
-            </button>
-          </div>
+          <button
+            onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')}
+            className="px-3 py-2 text-xs font-semibold rounded-xl glass-button text-gray-300 hover:text-white flex items-center space-x-1.5"
+          >
+            <ArrowUpDown className="w-3.5 h-3.5 text-accent-cyan" />
+            <span>{sortOrder === 'newest' ? 'Mais recentes' : 'Mais antigas'}</span>
+          </button>
         </div>
 
         {/* Gallery Content */}
@@ -388,30 +379,33 @@ export default function GuestGalleryPage({ params }: { params: { eventId: string
         )}
       </main>
 
-      {/* Floating Action Bar during Multi-Selection Mode */}
+      {/* Floating Action Bar during Multi-Selection Mode - Mobile First Centered */}
       {selectionMode && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-lg glass-panel bg-gray-900/90 rounded-2xl p-3 shadow-2xl border border-brand-500/40 flex items-center justify-between animate-slide-up">
-          <div className="flex items-center space-x-2 pl-2">
+        <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md glass-panel bg-gray-950/95 backdrop-blur-xl rounded-2xl p-3 shadow-2xl border border-brand-500/50 flex flex-col sm:flex-row items-center justify-between gap-2.5 animate-slide-up">
+          {/* Top/Left Row: Selection Counter & Marcar/Desmarcar Toggle */}
+          <div className="flex items-center justify-between w-full sm:w-auto px-1">
+            <span className="text-xs font-semibold text-gray-300">
+              <span className="text-brand-400 font-bold">{selectedPhotoIds.size}</span> foto{selectedPhotoIds.size !== 1 ? 's' : ''} selecionada{selectedPhotoIds.size !== 1 ? 's' : ''}
+            </span>
+
             <button
               onClick={selectAllPhotos}
-              className="text-xs text-brand-400 font-semibold hover:underline"
+              className="text-xs text-brand-400 font-medium hover:underline ml-3"
             >
               {selectedPhotoIds.size === photos.length ? 'Desmarcar Todas' : 'Marcar Todas'}
             </button>
-            <span className="text-xs text-gray-400">
-              ({selectedPhotoIds.size} selecionada{selectedPhotoIds.size !== 1 ? 's' : ''})
-            </span>
           </div>
 
+          {/* Centered Download ZIP Button */}
           <button
             onClick={() => handleDownloadZip(true)}
             disabled={selectedPhotoIds.size === 0 || downloadingZip}
-            className="px-4 py-2 text-xs font-semibold rounded-xl text-white bg-gradient-to-r from-brand-600 to-accent-violet hover:opacity-90 transition-all shadow-lg shadow-brand-600/30 flex items-center space-x-1.5 disabled:opacity-50"
+            className="w-full sm:w-auto py-2.5 px-5 text-xs font-bold rounded-xl text-white bg-gradient-to-r from-brand-600 via-brand-500 to-accent-violet hover:opacity-90 transition-all shadow-lg shadow-brand-600/40 flex items-center justify-center space-x-2 disabled:opacity-50 flex-shrink-0"
           >
             {downloadingZip ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              <RefreshCw className="w-4 h-4 animate-spin" />
             ) : (
-              <Download className="w-3.5 h-3.5" />
+              <Download className="w-4 h-4" />
             )}
             <span>Baixar Selecionadas (.ZIP)</span>
           </button>
