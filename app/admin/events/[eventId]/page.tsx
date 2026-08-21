@@ -75,8 +75,76 @@ export default function EventAdminDetail({ params }: { params: { eventId: string
 
   const downloadPreconfiguredBat = () => {
     if (!event) return;
-    
-    // Self-contained standalone batch file that extracts python watcher to %TEMP% and opens folder picker
+
+    const rawPythonScript = `import os, sys, time, requests
+from PIL import Image
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+
+API_URL = "${appBaseUrl}"
+EVENT_ID = "${event.id}"
+API_KEY = "${event.apiKey}"
+
+def upload_photo(file_path):
+    filename = os.path.basename(file_path)
+    ext = os.path.splitext(filename)[1].lower()
+    if ext not in [".jpg", ".jpeg", ".cr2", ".cr3", ".arw", ".nef", ".png"] or filename.endswith("_tmp.jpg"):
+        return
+    print(f"\\n[+] Nova foto detectada: {filename}")
+    time.sleep(1.0)
+    url = f"{API_URL.rstrip('/')}/api/events/{EVENT_ID}/upload"
+    headers = {"x-api-key": API_KEY}
+    try:
+        print(f"[>] Transmitindo foto para os convidados ao vivo...")
+        with open(file_path, "rb") as f:
+            files = {"file": (filename, f, "image/jpeg")}
+            res = requests.post(url, headers=headers, files=files, timeout=30)
+        if res.status_code == 200 and res.json().get("success"):
+            print(f"[OK] FOTO TRANSMITIDA COM SUCESSO!")
+        else:
+            print(f"[X] Falha no envio: {res.text}")
+    except Exception as e:
+        print(f"[X] Erro de conexao: {e}")
+
+class Handler(FileSystemEventHandler):
+    def on_created(self, event):
+        if not event.is_directory:
+            upload_photo(event.src_path)
+    def on_modified(self, event):
+        if not event.is_directory:
+            upload_photo(event.src_path)
+
+if __name__ == "__main__":
+    import tkinter as tk
+    from tkinter import filedialog
+    root = tk.Tk()
+    root.withdraw()
+    print("====================================================")
+    print("   Maggon Camera Ingestor -- Transmissao Ao Vivo")
+    print("====================================================")
+    print("Selecione a pasta onde a camera Canon salva as fotos...")
+    folder = filedialog.askdirectory(title="Selecione a pasta das fotos da Canon")
+    if not folder:
+        folder = os.path.expanduser("~/Pictures")
+    print(f"Pasta Selecionada: {folder}")
+    print("----------------------------------------------------")
+    print("TRANSMISSAO ATIVA! Pressione Ctrl+C para encerrar.")
+    print("Aguardando disparos da camera Canon...\\n")
+    event_handler = Handler()
+    observer = Observer()
+    observer.schedule(event_handler, path=folder, recursive=False)
+    observer.start()
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        observer.stop()
+    observer.join()
+`;
+
+    // Base64 encode the Python script so it never triggers Windows Batch syntax parsing errors
+    const b64Code = btoa(unescape(encodeURIComponent(rawPythonScript)));
+
     const batContent = `@echo off
 title Maggon Camera Ingestor
 color 0A
@@ -84,78 +152,38 @@ echo =====================================================
 echo    Maggon Camera Ingestor -- Conectando a Camera
 echo =====================================================
 echo.
+
+set PYTHON_CMD=python
+where python >nul 2>nul
+if %ERRORLEVEL% NEQ 0 (
+    where py >nul 2>nul
+    if %ERRORLEVEL% EQ 0 (
+        set PYTHON_CMD=py
+    ) else (
+        echo [ERRO] Python nao foi encontrado no seu Windows!
+        echo Por favor, instale o Python em https://www.python.org/downloads
+        echo IMPORTANTE: Marque a opcao "Add Python to PATH" durante a instalacao.
+        echo.
+        pause
+        exit /b 1
+    )
+)
+
 echo Verificando dependencias Python...
-python -c "import watchdog, requests, PIL" 2>nul
+%PYTHON_CMD% -c "import watchdog, requests, PIL" 2>nul
 if %ERRORLEVEL% NEQ 0 (
     echo Instalando bibliotecas necessarias (Watchdog, Requests, Pillow)...
-    pip install watchdog requests pillow
+    %PYTHON_CMD% -m pip install watchdog requests pillow
 )
 
 echo.
-echo Criando script de transmissao ao vivo...
-set WATCHER_SCRIPT=%TEMP%\\maggon_standalone_watcher.py
-
-(
-echo import os, sys, time, requests
-echo from PIL import Image
-echo from watchdog.observers import Observer
-echo from watchdog.events import FileSystemEventHandler
-echo.
-echo API_URL = "${appBaseUrl}"
-echo EVENT_ID = "${event.id}"
-echo API_KEY = "${event.apiKey}"
-echo.
-echo def upload_photo(file_path^):
-echo     filename = os.path.basename(file_path^)
-echo     ext = os.path.splitext(filename^)[1].lower(^)
-echo     if ext not in [".jpg", ".jpeg", ".cr2", ".cr3", ".arw", ".nef", ".png"] or filename.endswith("_tmp.jpg"^): return
-echo     print(f"\\n[+] Nova foto detectada: {filename}"^)
-echo     time.sleep(1.0^)
-echo     url = f"{API_URL.rstrip('/')}/api/events/{EVENT_ID}/upload"
-echo     headers = {"x-api-key": API_KEY}
-echo     try:
-echo         print(f"[>] Transmitindo foto para os convidados ao vivo..."^)
-echo         with open(file_path, "rb"^) as f:
-echo             files = {"file": (filename, f, "image/jpeg"^)}
-echo             res = requests.post(url, headers=headers, files=files, timeout=30^)
-echo         if res.status_code == 200 and res.json(^).get("success"^):
-echo             print(f"[OK] FOTO TRANSMITIDA COM SUCESSO!"^)
-echo         else:
-echo             print(f"[X] Falha no envio: {res.text}"^)
-echo     except Exception as e:
-echo         print(f"[X] Erro de conexao: {e}"^)
-echo.
-echo class Handler(FileSystemEventHandler^):
-echo     def on_created(self, event^):
-echo         if not event.is_directory: upload_photo(event.src_path^)
-echo     def on_modified(self, event^):
-echo         if not event.is_directory: upload_photo(event.src_path^)
-echo.
-echo if __name__ == "__main__":
-echo     import tkinter as tk
-echo     from tkinter import filedialog
-echo     root = tk.Tk(^)
-echo     root.withdraw(^)
-echo     print("Selecione a pasta onde a camera Canon salva as fotos..."^)
-echo     folder = filedialog.askdirectory(title="Selecione a pasta das fotos da Canon"^)
-echo     if not folder:
-echo         folder = os.path.expanduser("~/Pictures"^)
-echo     print(f"Pasta selecionada: {folder}"^)
-echo     print("TRANSMISSAO ATIVA! Tire fotos com a camera Canon..."^)
-echo     event_handler = Handler(^)
-echo     observer = Observer(^)
-echo     observer.schedule(event_handler, path=folder, recursive=False^)
-echo     observer.start(^)
-echo     try:
-echo         while True: time.sleep(1^)
-echo     except KeyboardInterrupt:
-echo         observer.stop(^)
-echo     observer.join(^)
-) > "%WATCHER_SCRIPT%"
+echo Iniciando Transmissao Ao Vivo...
+%PYTHON_CMD% -c "import base64; exec(base64.b64decode('${b64Code}'))"
 
 echo.
-echo Executando Transmissao Ao Vivo Maggon...
-python "%WATCHER_SCRIPT%"
+if %ERRORLEVEL% NEQ 0 (
+    echo Ocorreu um erro durante a execução da transmissão.
+)
 pause
 `;
 
