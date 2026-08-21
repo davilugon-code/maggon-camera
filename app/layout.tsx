@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Maggon - Transmissão de Fotos de Eventos em Tempo Real',
+  title: 'Maggon Câmera - Transmissão de Fotos de Eventos em Tempo Real',
   description: 'Fotos tiradas pelo fotógrafo com câmera Canon direto para a nuvem. Convidados visualizam e baixam na hora via QR Code.',
-  keywords: ['Maggon', 'Fotos em tempo real', 'Tethering Canon', 'Fotografia de eventos', 'QR Code fotos'],
+  keywords: ['Maggon Câmera', 'Maggon', 'Fotos em tempo real', 'Tethering Canon', 'Fotografia de eventos', 'QR Code fotos'],
 };
 
 export default function RootLayout({

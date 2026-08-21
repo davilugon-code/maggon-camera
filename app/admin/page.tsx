@@ -82,7 +82,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
-                Maggon Admin
+                Maggon Câmera Admin
               </span>
             </Link>
           </div>

@@ -17,8 +17,8 @@ export default function Home() {
                 <Camera className="w-5 h-5 text-brand-500" />
               </div>
             </div>
-            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-gray-400 tracking-tight">
-              Maggon
+            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-gray-300 tracking-tight">
+              Maggon Câmera
             </span>
           </div>
 
@@ -43,13 +43,13 @@ export default function Home() {
 
         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-4xl text-white leading-tight">
           Fotos do evento direto no celular dos convidados em{' '}
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-accent-violet to-accent-cyan">
+          <span className="text-brand-400 drop-shadow-md">
             Tempo Real
           </span>
         </h1>
 
         <p className="mt-6 text-lg sm:text-xl text-gray-400 max-w-2xl font-normal leading-relaxed">
-          Sua câmera Canon tira a foto, o script de tethering envia automaticamente para o <strong>Maggon</strong> e os convidados leem o QR Code para visualizar e baixar em alta resolução instantaneamente.
+          Sua câmera Canon tira a foto, o script de tethering envia automaticamente para o <strong>Maggon Câmera</strong> e os convidados leem o QR Code para visualizar e baixar em alta resolução instantaneamente.
         </p>
 
         {/* Action Buttons */}
@@ -107,7 +107,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="w-full border-t border-gray-800/60 glass-panel py-6 text-center text-xs text-gray-500">
-        <p>Maggon © 2026 — Plataforma de Fotografia de Eventos em Tempo Real.</p>
+        <p>Maggon Câmera © 2026 — Plataforma de Fotografia de Eventos em Tempo Real.</p>
       </footer>
     </div>
   );

@@ -163,7 +163,7 @@ export default function EventAdminDetail({ params }: { params: { eventId: string
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 44px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(event?.title || 'Maggon Evento', canvas.width / 2, 120);
+      ctx.fillText(event?.title || 'Maggon Câmera Evento', canvas.width / 2, 120);
 
       // Subtitle Instruction
       ctx.fillStyle = '#38bdf8';
@@ -181,7 +181,7 @@ export default function EventAdminDetail({ params }: { params: { eventId: string
       // Footer
       ctx.fillStyle = '#9ca3af';
       ctx.font = '24px sans-serif';
-      ctx.fillText('Maggon • Fotos em Tempo Real', canvas.width / 2, 920);
+      ctx.fillText('Maggon Câmera • Fotos em Tempo Real', canvas.width / 2, 920);
 
       const pngUrl = canvas.toDataURL('image/png');
       const downloadLink = document.createElement('a');
