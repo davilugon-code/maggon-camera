@@ -19,7 +19,8 @@ import {
   ImageIcon,
   Sparkles,
   Printer,
-  RefreshCw
+  RefreshCw,
+  PlaySquare
 } from 'lucide-react';
 import { Event, Photo } from '@/lib/types';
 
@@ -70,6 +71,32 @@ export default function EventAdminDetail({ params }: { params: { eventId: string
     navigator.clipboard.writeText(cliCommand);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const downloadPreconfiguredBat = () => {
+    if (!event) return;
+    const batContent = `@echo off
+title Maggon Camera Ingestor
+echo =====================================================
+echo    Maggon Camera Ingestor -- Conectando a Camera
+echo =====================================================
+echo.
+echo Verificando dependencias...
+python -c "import watchdog, requests, PIL" 2>nul || pip install watchdog requests pillow
+echo.
+echo Iniciando transmissao ao vivo da camera Canon...
+python tethering-client\\watcher.py --folder "%USERPROFILE%\\Pictures" --api-url "${appBaseUrl}" --event-id "${event.id}" --api-key "${event.apiKey}"
+pause
+`;
+    const blob = new Blob([batContent], { type: 'application/x-bat' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `INICIAR_TRANSMISSAO_${event.slug}.bat`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handleToggleStatus = async () => {
@@ -328,40 +355,47 @@ export default function EventAdminDetail({ params }: { params: { eventId: string
                   <Camera className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">Script de Tethering Canon</h3>
-                  <p className="text-xs text-gray-400">Execute no terminal do computador conectado à câmera Canon.</p>
+                  <h3 className="text-lg font-bold text-white">Integração com a Câmera Canon</h3>
+                  <p className="text-xs text-gray-400">Para seu cliente usar sem digitar nenhum comando no terminal.</p>
                 </div>
               </div>
 
-              {/* Folder Selector Input */}
-              <div className="mb-4">
-                <label className="block text-xs font-semibold uppercase text-gray-400 mb-1">
-                  Pasta de Download do EOS Utility:
-                </label>
-                <input
-                  type="text"
-                  value={folderPath}
-                  onChange={(e) => setFolderPath(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-gray-950 border border-gray-800 text-xs font-mono text-gray-200 focus:outline-none focus:border-brand-500"
-                />
-              </div>
-
-              {/* CLI Command Box */}
-              <div className="bg-gray-950 rounded-2xl p-4 border border-gray-800 relative group font-mono text-xs text-brand-300 overflow-x-auto">
-                <pre className="whitespace-pre-wrap break-all pr-10">{cliCommand}</pre>
+              {/* 1-Click BAT Downloader Button */}
+              <div className="bg-gradient-to-r from-brand-900/60 to-accent-violet/30 border border-brand-500/40 rounded-2xl p-5 mb-5 text-left">
+                <div className="flex items-center space-x-2 text-brand-300 font-bold text-sm mb-1">
+                  <PlaySquare className="w-5 h-5 text-accent-cyan" />
+                  <span>Opção 1: Arquivo de 2-Cliques para o Cliente (.BAT)</span>
+                </div>
+                <p className="text-xs text-gray-300 mb-4 leading-relaxed">
+                  Clique no botão abaixo para baixar um executável `.bat` já configurado com a chave deste evento. Seu cliente apenas dá **2 cliques** no arquivo no computador e a transmissão começa!
+                </p>
 
                 <button
-                  onClick={copyCliCommand}
-                  className="absolute top-3 right-3 p-2 rounded-lg bg-gray-800/80 hover:bg-gray-700 text-gray-200 transition-colors"
-                  title="Copiar Comando CLI"
+                  onClick={downloadPreconfiguredBat}
+                  className="w-full py-3 px-4 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-accent-emerald to-brand-600 hover:opacity-95 transition-all shadow-lg shadow-accent-emerald/20 flex items-center justify-center space-x-2"
                 >
-                  {copied ? <Check className="w-4 h-4 text-accent-emerald" /> : <Copy className="w-4 h-4" />}
+                  <Download className="w-4 h-4" />
+                  <span>Baixar Lançador Pré-Configurado (.BAT)</span>
                 </button>
               </div>
 
-              <p className="text-[11px] text-gray-500 mt-2">
-                💡 As fotos salvas pelo EOS Utility nessa pasta serão transmitidas automaticamente para os convidados em tempo real.
-              </p>
+              {/* Manual CLI Command Box */}
+              <div className="mb-2">
+                <label className="block text-xs font-semibold uppercase text-gray-400 mb-1">
+                  Opção 2: Linha de Comando (Avançado)
+                </label>
+                <div className="bg-gray-950 rounded-2xl p-3.5 border border-gray-800 relative group font-mono text-xs text-brand-300 overflow-x-auto">
+                  <pre className="whitespace-pre-wrap break-all pr-10">{cliCommand}</pre>
+
+                  <button
+                    onClick={copyCliCommand}
+                    className="absolute top-3 right-3 p-1.5 rounded-lg bg-gray-800/80 hover:bg-gray-700 text-gray-200 transition-colors"
+                    title="Copiar Comando"
+                  >
+                    {copied ? <Check className="w-4 h-4 text-accent-emerald" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Web Upload Dropzone Card */}
@@ -415,7 +449,7 @@ export default function EventAdminDetail({ params }: { params: { eventId: string
               <Camera className="w-12 h-12 text-gray-600 mx-auto mb-3" />
               <p className="font-semibold text-white">Nenhuma foto enviada para este evento ainda</p>
               <p className="text-xs text-gray-400 mt-1">
-                Inicie o script Python na câmera ou faça um upload manual acima para testar.
+                Inicie a transmissão pela câmera ou faça um upload manual acima para testar.
               </p>
             </div>
           ) : (
