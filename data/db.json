@@ -1,0 +1,31 @@
+{
+  "events": [
+    {
+      "id": "demo-casamento",
+      "title": "Casamento Lucas & Mariana",
+      "slug": "casamento-lucas-mariana",
+      "description": "Cobertura fotográfica ao vivo do casamento. Baixe suas fotos!",
+      "date": "2026-08-20",
+      "apiKey": "ls_live_demo_key_2026",
+      "status": "active",
+      "createdAt": "2026-08-20T23:12:18.760Z",
+      "totalPhotosCount": 1,
+      "totalDownloadsCount": 1,
+      "totalStorageBytes": 26821,
+      "coverPhotoUrl": "/uploads/demo-casamento/thumbnails/1787267539121_sample_canon_1.jpg"
+    }
+  ],
+  "photos": [
+    {
+      "id": "photo_1787267539152_7r4lk",
+      "eventId": "demo-casamento",
+      "filename": "1787267539121_sample_canon_1.jpg",
+      "originalUrl": "/uploads/demo-casamento/originals/1787267539121_sample_canon_1.jpg",
+      "thumbnailUrl": "/uploads/demo-casamento/thumbnails/1787267539121_sample_canon_1.jpg",
+      "sizeBytes": 26821,
+      "width": 1920,
+      "height": 1080,
+      "uploadedAt": "2026-08-20T23:12:19.152Z"
+    }
+  ]
+}
